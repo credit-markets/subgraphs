@@ -20,6 +20,10 @@ dataSources:
       abis:
         - name: Registry
           file: ./abis/Registry.json
+        - name: ERC20
+          file: ./abis/ERC20.json
+        - name: AggregatorV3Interface
+          file: ./abis/AggregatorV3Interface.json
       eventHandlers:
         - event: FactoryAdded(indexed address)
           handler: handleFactoryAdded
