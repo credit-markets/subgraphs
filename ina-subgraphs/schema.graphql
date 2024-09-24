@@ -1,0 +1,47 @@
+type FactoryAdded @entity(immutable: true) {
+  id: Bytes!
+  factoryAddress: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type FactoryRemoved @entity(immutable: true) {
+  id: Bytes!
+  factoryAddress: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type ProductAdded @entity(immutable: true) {
+  id: Bytes!
+  productAddresses: [Bytes!]! # address[]
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type ProductRemoved @entity(immutable: true) {
+  id: Bytes!
+  productAddresses: [Bytes!]! # address[]
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type TokenAdded @entity(immutable: true) {
+  id: Bytes!
+  tokenAddresses: [Bytes!]! # address[]
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type TokenRemoved @entity(immutable: true) {
+  id: Bytes!
+  tokenAddresses: [Bytes!]! # address[]
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}

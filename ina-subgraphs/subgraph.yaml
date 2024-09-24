@@ -1,0 +1,41 @@
+specVersion: 1.0.0
+indexerHints:
+  prune: auto
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: Registry
+    network: arbitrum-sepolia
+    source:
+      address: "0x082d8Fab16991644881067D388301fECAf40eEE9"
+      abi: Registry
+      startBlock: 83692115
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - FactoryAdded
+        - FactoryRemoved
+        - ProductAdded
+        - ProductRemoved
+        - TokenAdded
+        - TokenRemoved
+      abis:
+        - name: Registry
+          file: ./abis/Registry.json
+      eventHandlers:
+        - event: FactoryAdded(indexed address)
+          handler: handleFactoryAdded
+        - event: FactoryRemoved(indexed address)
+          handler: handleFactoryRemoved
+        - event: ProductAdded(address[])
+          handler: handleProductAdded
+        - event: ProductRemoved(address[])
+          handler: handleProductRemoved
+        - event: TokenAdded(address[])
+          handler: handleTokenAdded
+        - event: TokenRemoved(address[])
+          handler: handleTokenRemoved
+      file: ./src/registry.ts
