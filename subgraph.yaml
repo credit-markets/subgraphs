@@ -4,11 +4,11 @@ schema:
 dataSources:
   - kind: ethereum
     name: Registry
-    network: { { network } }
+    network: arbitrum-sepolia
     source:
-      address: "{{ Registry.address }}"
       abi: Registry
-      startBlock: { { Registry.startBlock } }
+      address: "0x575Ed3D1F628f0CfC607d72ea2B884BB28FC57E6"
+      startBlock: 83769567
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -34,11 +34,10 @@ dataSources:
         - event: TokenRemoved(address[])
           handler: handleTokenRemoved
       file: ./src/registry.ts
-
 templates:
   - kind: ethereum/contract
     name: InaAccountFactory
-    network: { { network } }
+    network: arbitrum-sepolia
     source:
       abi: InaAccountFactory
     mapping:
@@ -54,10 +53,9 @@ templates:
         - event: AccountCreated(indexed address,address[])
           handler: handleInaAccountCreated
       file: ./src/factory.ts
-
   - kind: ethereum/contract
     name: MultiOwnerLightAccount
-    network: { { network } }
+    network: arbitrum-sepolia
     source:
       abi: MultiOwnerLightAccount
     mapping:
@@ -73,10 +71,9 @@ templates:
         - event: OwnersUpdated(address[],address[])
           handler: handleOwnersUpdated
       file: ./src/account.ts
-
   - kind: ethereum/contract
     name: Token
-    network: { { network } }
+    network: arbitrum-sepolia
     source:
       abi: ERC20
     mapping:
@@ -95,10 +92,9 @@ templates:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
       file: ./src/token.ts
-
   - kind: ethereum/contract
     name: PriceFeed
-    network: { { network } }
+    network: arbitrum-sepolia
     source:
       abi: AggregatorV3Interface
     mapping:
