@@ -1,47 +1,51 @@
-type FactoryAdded @entity(immutable: true) {
-  id: Bytes!
-  factoryAddress: Bytes! # address
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
+type Factory @entity {
+  id: ID! # Factory address
+  accounts: [Account!]! @derivedFrom(field: "factory")
 }
 
-type FactoryRemoved @entity(immutable: true) {
-  id: Bytes!
-  factoryAddress: Bytes! # address
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
+type Account @entity {
+  id: ID! # Account address
+  factory: Factory! # Relation to Factory entity
+  owners: [Bytes!]! # Store the owners as an array of addresses
+  holdings: [Holding!]! @derivedFrom(field: "account")
+  transactions: [Transaction!]! @derivedFrom(field: "account")
 }
 
-type ProductAdded @entity(immutable: true) {
-  id: Bytes!
-  productAddresses: [Bytes!]! # address[]
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
+type Product @entity {
+  id: ID! # Product address
 }
 
-type ProductRemoved @entity(immutable: true) {
-  id: Bytes!
-  productAddresses: [Bytes!]! # address[]
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
+type Token @entity {
+  id: ID! # Token address
+  priceFeedAddress: Bytes! @index(unique: true)
+  name: String!
+  symbol: String!
+  decimals: Int!
+  lastPrice: BigInt!
+  lastUpdate: BigInt!
+  holdings: [Holding!]! @derivedFrom(field: "token")
 }
 
-type TokenAdded @entity(immutable: true) {
-  id: Bytes!
-  tokenAddresses: [Bytes!]! # address[]
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
+type Holding @entity {
+  id: ID! # Composite key: account address + token address
+  account: Account!
+  token: Token!
+  amount: BigInt!
 }
 
-type TokenRemoved @entity(immutable: true) {
-  id: Bytes!
-  tokenAddresses: [Bytes!]! # address[]
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
+type Transaction @entity {
+  id: ID! # Transaction hash
+  account: Account!
+  from: Bytes!
+  to: Bytes!
+  token: Token!
+  timestamp: BigInt!
+  amount: BigInt!
+  value: BigInt!
+  tag: TransactionTag!
+}
+
+enum TransactionTag {
+  DEPOSIT
+  WITHDRAW
 }
