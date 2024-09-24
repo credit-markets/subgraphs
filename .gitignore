@@ -29,6 +29,6 @@ coverage.json
 # Typechain
 typechain
 typechain-types
-
+.DS_Store
 # Hardhat files
 cache
