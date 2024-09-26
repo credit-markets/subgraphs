@@ -1,6 +1,6 @@
 # INA Protocol Subgraph
 
-This subgraph indexes events from the INA Protocol on the Arbitrum Sepolia network. It tracks factories, accounts, products, tokens, and token transactions.
+This subgraph indexes events from the INA Protocol on the Arbitrum Sepolia network. It tracks factories, accounts, pools, tokens, and token transactions.
 
 ## Setup
 
@@ -51,7 +51,7 @@ To deploy the subgraph:
 
 - `Factory`: Represents an INA Protocol factory.
 - `Account`: Represents an account created by a factory.
-- `Product`: Represents a product in the protocol.
+- `Pool`: Represents a pool in the protocol.
 - `Token`: Represents an ERC20 token supported by the protocol.
 - `Holding`: Represents a token holding for an account.
 - `Transaction`: Represents a token transfer involving an account.

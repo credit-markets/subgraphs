@@ -15,7 +15,7 @@ dataSources:
       language: wasm/assemblyscript
       entities:
         - Factory
-        - Product
+        - Pool
         - Token
       abis:
         - name: Registry
@@ -29,10 +29,10 @@ dataSources:
           handler: handleFactoryAdded
         - event: FactoryRemoved(indexed address)
           handler: handleFactoryRemoved
-        - event: ProductAdded(address[])
-          handler: handleProductAdded
-        - event: ProductRemoved(address[])
-          handler: handleProductRemoved
+        - event: PoolAdded(address[])
+          handler: handlePoolAdded
+        - event: PoolRemoved(address[])
+          handler: handlePoolRemoved
         - event: TokenAdded(address[],address[])
           handler: handleTokenAdded
         - event: TokenRemoved(address[])

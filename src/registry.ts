@@ -1,14 +1,14 @@
 import {
   FactoryAdded as FactoryAddedEvent,
   FactoryRemoved as FactoryRemovedEvent,
-  ProductAdded as ProductAddedEvent,
-  ProductRemoved as ProductRemovedEvent,
+  PoolAdded as PoolAddedEvent,
+  PoolRemoved as PoolRemovedEvent,
   TokenAdded as TokenAddedEvent,
   TokenRemoved as TokenRemovedEvent
 } from "../generated/Registry/Registry"
 import {
   Factory,
-  Product,
+  Pool,
   Token,
 } from "../generated/schema"
 import { InaAccountFactory, Token as TokenTemplate } from "../generated/templates"
@@ -38,26 +38,26 @@ export function handleFactoryRemoved(event: FactoryRemovedEvent): void {
   }
 }
 
-// Handle ProductAdded event
-export function handleProductAdded(event: ProductAddedEvent): void {
-  // Loop over the array of product addresses and create Product entities
-  let productAddresses = event.params.productAddresses
-  for (let i = 0; i < productAddresses.length; i++) {
-    let product = Product.load(productAddresses[i].toHex())
-    if (!product) {
-      product = new Product(productAddresses[i].toHex())
-      product.save() // Save only if the product is new
+// Handle PoolAdded event
+export function handlePoolAdded(event: PoolAddedEvent): void {
+  // Loop over the array of pool addresses and create Pool entities
+  let poolAddresses = event.params.poolAddresses
+  for (let i = 0; i < poolAddresses.length; i++) {
+    let pool = Pool.load(poolAddresses[i].toHex())
+    if (!pool) {
+      pool = new Pool(poolAddresses[i].toHex())
+      pool.save() // Save only if the pool is new
     }
   }
 }
 
-// Handle ProductRemoved event
-export function handleProductRemoved(event: ProductRemovedEvent): void {
-  let productAddresses = event.params.productAddresses
-  for (let i = 0; i < productAddresses.length; i++) {
-    let productId = productAddresses[i].toHex()
-    if (Product.load(productId) != null) {
-      store.remove('Product', productId) // Remove the product if it exists
+// Handle PoolRemoved event
+export function handlePoolRemoved(event: PoolRemovedEvent): void {
+  let poolAddresses = event.params.poolAddresses
+  for (let i = 0; i < poolAddresses.length; i++) {
+    let poolId = poolAddresses[i].toHex()
+    if (Pool.load(poolId) != null) {
+      store.remove('Pool', poolId) // Remove the pool if it exists
     }
   }
 }

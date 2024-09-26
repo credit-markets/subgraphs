@@ -11,8 +11,8 @@ type Account @entity {
   transactions: [Transaction!]! @derivedFrom(field: "account")
 }
 
-type Product @entity {
-  id: ID! # Product address
+type Pool @entity {
+  id: ID! # Pool address
 }
 
 type Token @entity {
