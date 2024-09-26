@@ -7,7 +7,7 @@ dataSources:
     network: arbitrum-sepolia
     source:
       abi: Registry
-      address: "0x575Ed3D1F628f0CfC607d72ea2B884BB28FC57E6"
+      address: "0xE4b24A53719c50f2a0d686cE3504A877c3A6690E"
       startBlock: 83769567
     mapping:
       kind: ethereum/events
@@ -24,6 +24,8 @@ dataSources:
           file: ./abis/ERC20.json
         - name: AggregatorV3Interface
           file: ./abis/AggregatorV3Interface.json
+        - name: InaPool
+          file: ./abis/InaPool.json
       eventHandlers:
         - event: FactoryAdded(indexed address)
           handler: handleFactoryAdded
@@ -114,3 +116,30 @@ templates:
         - event: AnswerUpdated(indexed int256,indexed uint256,uint256)
           handler: handleAnswerUpdated
       file: ./src/price-feed.ts
+  - kind: ethereum/contract
+    name: InaPool
+    network: arbitrum-sepolia
+    source:
+      abi: InaPool
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Pool
+        - Account
+        - Investment
+        - Transaction
+      abis:
+        - name: InaPool
+          file: ./abis/InaPool.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handlePoolTransfer
+        - event: FundsTaken(indexed address,uint256)
+          handler: handleFundsTaken
+        - event: Repaid(uint256)
+          handler: handleRepaid
+        - event: Refunded(indexed address,uint256)
+          handler: handleRefunded
+      file: ./src/pool.ts

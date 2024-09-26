@@ -1,8 +1,8 @@
 {
   "arbitrum-sepolia": {
     "Registry": {
-      "address": "0x575Ed3D1F628f0CfC607d72ea2B884BB28FC57E6",
-      "startBlock": 83769567
+      "address": "0xE4b24A53719c50f2a0d686cE3504A877c3A6690E",
+      "startBlock": 84337657
     }
   }
 }

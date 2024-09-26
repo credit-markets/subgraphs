@@ -11,10 +11,12 @@ import {
   Pool,
   Token,
 } from "../generated/schema"
-import { InaAccountFactory, Token as TokenTemplate } from "../generated/templates"
+import { InaAccountFactory, Token as TokenTemplate, InaPool } from "../generated/templates"
+import { InaPool as InaPoolContract } from "../generated/templates/InaPool/InaPool";
 import { store, BigInt } from '@graphprotocol/graph-ts'
 import { ERC20 } from "../generated/templates/Token/ERC20"
 import { AggregatorV3Interface } from "../generated/templates/PriceFeed/AggregatorV3Interface"
+import { incrementTotalPools } from "./analytics";
 
 // Handle FactoryAdded event
 export function handleFactoryAdded(event: FactoryAddedEvent): void {
@@ -39,14 +41,38 @@ export function handleFactoryRemoved(event: FactoryRemovedEvent): void {
 }
 
 // Handle PoolAdded event
-export function handlePoolAdded(event: PoolAddedEvent): void {
-  // Loop over the array of pool addresses and create Pool entities
+export function handlePoolAdded(event: PoolAddedEvent): void { // TODO: emit an event instead calling functions here.
   let poolAddresses = event.params.poolAddresses
   for (let i = 0; i < poolAddresses.length; i++) {
-    let pool = Pool.load(poolAddresses[i].toHex())
+    let poolAddress = poolAddresses[i]
+    let pool = Pool.load(poolAddress.toHexString())
     if (!pool) {
-      pool = new Pool(poolAddresses[i].toHex())
-      pool.save() // Save only if the pool is new
+      pool = new Pool(poolAddress.toHexString())
+      // Bind the InaPool contract
+      let inaPoolContract = InaPoolContract.bind(poolAddress);
+
+      pool.asset = inaPoolContract.asset().toHexString()
+      pool.name = inaPoolContract.name()
+      pool.symbol = inaPoolContract.symbol()
+      pool.startTime = inaPoolContract.startTime()
+      pool.endTime = inaPoolContract.endTime()
+      pool.threshold = inaPoolContract.threshold()
+      pool.amountToRaise = inaPoolContract.amountToRaise()
+      pool.feeBasisPoints = inaPoolContract.feeBasisPoints()
+      pool.estimatedReturnBasisPoints = inaPoolContract.estimatedReturnBasisPoints()
+      pool.creditFacilitator = inaPoolContract.creditFacilitator()
+      pool.term = inaPoolContract.term()
+      pool.totalInvested = BigInt.fromI32(0)
+      pool.fundsTaken = false
+      pool.repaid = false
+      pool.refunded = false
+
+      pool.save()
+      incrementTotalPools()
+      pool.save()
+
+      // Create a new InaPool data source
+      InaPool.create(poolAddress)
     }
   }
 }

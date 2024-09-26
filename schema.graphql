@@ -8,11 +8,28 @@ type Account @entity {
   factory: Factory! # Relation to Factory entity
   owners: [Bytes!]! # Store the owners as an array of addresses
   holdings: [Holding!]! @derivedFrom(field: "account")
+  investments: [Investment!]! @derivedFrom(field: "account")
   transactions: [Transaction!]! @derivedFrom(field: "account")
 }
 
 type Pool @entity {
   id: ID! # Pool address
+  asset: Token!
+  name: String!
+  symbol: String!
+  startTime: BigInt!
+  endTime: BigInt!
+  threshold: BigInt!
+  amountToRaise: BigInt!
+  feeBasisPoints: BigInt!
+  estimatedReturnBasisPoints: BigInt!
+  creditFacilitator: Bytes!
+  term: BigInt!
+  totalInvested: BigInt!
+  fundsTaken: Boolean!
+  repaid: Boolean!
+  refunded: Boolean!
+  investments: [Investment!]! @derivedFrom(field: "pool")
 }
 
 type Token @entity {
@@ -33,6 +50,13 @@ type Holding @entity {
   amount: BigInt!
 }
 
+type Investment @entity {
+  id: ID! # Composite key: account address + pool address
+  account: Account!
+  pool: Pool!
+  shares: BigInt!
+}
+
 type Transaction @entity {
   id: ID! # Transaction hash
   account: Account!
@@ -45,7 +69,16 @@ type Transaction @entity {
   tag: TransactionTag!
 }
 
+type Analytics @entity {
+  id: ID! # Single instance, can use "1" as id
+  tvl: BigInt! # Total Value Locked across all pools
+  totalInvestors: Int!
+  totalPools: Int!
+}
+
 enum TransactionTag {
   DEPOSIT
   WITHDRAW
+  INVEST
+  REPAY
 }

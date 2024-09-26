@@ -59,11 +59,6 @@
             "type": "address"
           },
           {
-            "internalType": "address",
-            "name": "easContract",
-            "type": "address"
-          },
-          {
             "internalType": "uint256",
             "name": "kycLevel",
             "type": "uint256"
@@ -299,12 +294,6 @@
         "indexed": true,
         "internalType": "address",
         "name": "creditFacilitator",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "easContract",
         "type": "address"
       },
       {

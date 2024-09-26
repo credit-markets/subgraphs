@@ -1,6 +1,7 @@
 import { Transfer as TransferEvent } from "../generated/templates/Token/ERC20"
-import { Token, Account, Holding, Transaction } from "../generated/schema"
+import { Token, Account, Holding, Transaction, Pool } from "../generated/schema"
 import { BigInt } from "@graphprotocol/graph-ts"
+import { updateTVL } from "./analytics"
 
 export function handleTransfer(event: TransferEvent): void {
     let token = Token.load(event.address.toHexString())
@@ -9,14 +10,29 @@ export function handleTransfer(event: TransferEvent): void {
     let fromAccount = Account.load(event.params.from.toHexString())
     let toAccount = Account.load(event.params.to.toHexString())
 
+    // Check if this is a transfer to or from a pool
+    let fromPool = Pool.load(event.params.from.toHexString())
+    let toPool = Pool.load(event.params.to.toHexString())
+
     if (fromAccount) {
         updateHolding(fromAccount, token, event.params.value.neg())
-        createTransaction(fromAccount, event, token, "WITHDRAW")
+        if (!fromPool) {
+            createTransaction(event, token, "WITHDRAW")
+        }
     }
 
     if (toAccount) {
         updateHolding(toAccount, token, event.params.value)
-        createTransaction(toAccount, event, token, "DEPOSIT")
+        if (!toPool) {
+            createTransaction(event, token, "DEPOSIT")
+        }
+    }
+
+    if (fromPool) {
+        createTransaction(event, token, "REPAY")
+    } else if (toPool) {
+        createTransaction(event, token, "INVEST")
+        updateTVL(event.params.value)
     }
 }
 
@@ -35,10 +51,8 @@ function updateHolding(account: Account, token: Token, changeAmount: BigInt): vo
     holding.save()
 }
 
-
-function createTransaction(account: Account, event: TransferEvent, token: Token, tag: string): void {
-    let transaction = new Transaction(event.transaction.hash.toHexString() + "-" + account.id)
-    transaction.account = account.id
+function createTransaction(event: TransferEvent, token: Token, tag: string): void {
+    let transaction = new Transaction(event.transaction.hash.toHexString())
     transaction.from = event.params.from
     transaction.to = event.params.to
     transaction.token = token.id
