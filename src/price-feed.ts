@@ -1,4 +1,3 @@
-import { BigInt } from "@graphprotocol/graph-ts"
 import { AnswerUpdated as AnswerUpdatedEvent } from "../generated/templates/PriceFeed/AggregatorV3Interface"
 import { Token } from "../generated/schema"
 

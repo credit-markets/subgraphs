@@ -10,6 +10,8 @@ type Account @entity {
   holdings: [Holding!]! @derivedFrom(field: "account")
   investments: [Investment!]! @derivedFrom(field: "account")
   transactions: [Transaction!]! @derivedFrom(field: "account")
+  kycAttestationUID: Bytes! # UID of the KYC attestation, all zeros if revoked or not set
+  kycLevel: Int! # KYC level of the account, 0 if revoked or not set
 }
 
 type Pool @entity {
@@ -29,6 +31,7 @@ type Pool @entity {
   fundsTaken: Boolean!
   repaid: Boolean!
   refunded: Boolean!
+  kycLevel: BigInt!
   investments: [Investment!]! @derivedFrom(field: "pool")
 }
 

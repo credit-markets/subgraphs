@@ -17,6 +17,7 @@ dataSources:
         - Factory
         - Pool
         - Token
+        - Account
       abis:
         - name: Registry
           file: ./abis/Registry.json
@@ -39,6 +40,10 @@ dataSources:
           handler: handleTokenAdded
         - event: TokenRemoved(address[])
           handler: handleTokenRemoved
+        - event: KYCAttested(indexed address,uint256,uint256,bytes32)
+          handler: handleKYCAttested
+        - event: KYCRevoked(indexed address,bytes32)
+          handler: handleKYCRevoked
       file: ./src/registry.ts
 templates:
   - kind: ethereum/contract

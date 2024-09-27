@@ -4,16 +4,19 @@ import {
   PoolAdded as PoolAddedEvent,
   PoolRemoved as PoolRemovedEvent,
   TokenAdded as TokenAddedEvent,
-  TokenRemoved as TokenRemovedEvent
+  TokenRemoved as TokenRemovedEvent,
+  KYCAttested as KYCAttestedEvent,
+  KYCRevoked as KYCRevokedEvent
 } from "../generated/Registry/Registry"
 import {
   Factory,
   Pool,
   Token,
+  Account
 } from "../generated/schema"
 import { InaAccountFactory, Token as TokenTemplate, InaPool } from "../generated/templates"
 import { InaPool as InaPoolContract } from "../generated/templates/InaPool/InaPool";
-import { store, BigInt } from '@graphprotocol/graph-ts'
+import { store, BigInt, Bytes } from '@graphprotocol/graph-ts'
 import { ERC20 } from "../generated/templates/Token/ERC20"
 import { AggregatorV3Interface } from "../generated/templates/PriceFeed/AggregatorV3Interface"
 import { incrementTotalPools } from "./analytics";
@@ -61,6 +64,7 @@ export function handlePoolAdded(event: PoolAddedEvent): void { // TODO: emit an 
       pool.feeBasisPoints = inaPoolContract.feeBasisPoints()
       pool.estimatedReturnBasisPoints = inaPoolContract.estimatedReturnBasisPoints()
       pool.creditFacilitator = inaPoolContract.creditFacilitator()
+      pool.kycLevel = inaPoolContract.kycLevel()
       pool.term = inaPoolContract.term()
       pool.totalInvested = BigInt.fromI32(0)
       pool.fundsTaken = false
@@ -139,3 +143,22 @@ export function handleTokenRemoved(event: TokenRemovedEvent): void {
   }
 }
 
+// Handle KYCAttested event
+export function handleKYCAttested(event: KYCAttestedEvent): void {
+  let account = Account.load(event.params.smartWallet.toHexString())
+  if (account) {
+    account.kycAttestationUID = event.params.attestationUID
+    account.kycLevel = event.params.kycLevel.toI32()
+    account.save()
+  }
+}
+
+// Handle KYCRevoked event
+export function handleKYCRevoked(event: KYCRevokedEvent): void {
+  let account = Account.load(event.params.smartWallet.toHexString())
+  if (account) {
+    account.kycAttestationUID = Bytes.fromHexString('0x0000000000000000000000000000000000000000000000000000000000000000')
+    account.kycLevel = 0
+    account.save()
+  }
+}
