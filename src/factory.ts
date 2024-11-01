@@ -1,8 +1,8 @@
 import {
     AccountCreated,
 } from "../generated/templates/InaAccountFactory/InaAccountFactory"
-import { Account, Factory } from "../generated/schema"
-import { Bytes } from "@graphprotocol/graph-ts"
+import { Account } from "../generated/schema"
+import { Bytes, BigInt } from "@graphprotocol/graph-ts"
 import { MultiOwnerLightAccount } from "../generated/templates"
 
 // Handle LightAccountInitialized event
@@ -18,6 +18,8 @@ export function handleInaAccountCreated(event: AccountCreated): void {
     account.kycLevel = 0
     // Store the owners as an array of Bytes (addresses)
     account.owners = event.params.owners.map<Bytes>((owner: Bytes) => owner)
+    account.totalInterestEarned = BigInt.fromI32(0) // Initialize total interest earned
+
 
     // Save the account entity
     account.save()

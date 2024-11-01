@@ -12,6 +12,7 @@ type Account @entity {
   transactions: [Transaction!]! @derivedFrom(field: "account")
   kycAttestationUID: Bytes! # UID of the KYC attestation, all zeros if revoked or not set
   kycLevel: Int! # KYC level of the account, 0 if revoked or not set
+  totalInterestEarned: BigInt! # New field to track total interest earned
 }
 
 type Pool @entity {

@@ -1,6 +1,6 @@
 import { Transfer as TransferEvent } from "../generated/templates/Token/ERC20"
 import { Token, Account, Holding, Transaction, Pool } from "../generated/schema"
-import { BigInt, Address } from "@graphprotocol/graph-ts"
+import { BigInt } from "@graphprotocol/graph-ts"
 import { updateTVL } from "./analytics"
 
 export function handleTransfer(event: TransferEvent): void {
@@ -30,6 +30,24 @@ export function handleTransfer(event: TransferEvent): void {
 
     if (fromPool) {
         let toAccountId = toAccount ? toAccount.id : event.params.to.toHexString()
+
+        // Calculate principal and interest using estimatedReturnBasisPoints
+        let account = Account.load(toAccountId)
+        if (account && fromPool.estimatedReturnBasisPoints) {
+            let repaymentAmount = event.params.value
+            let basisPoints = fromPool.estimatedReturnBasisPoints
+
+            // Calculate principal: repaymentAmount / (1 + returnRate)
+            let returnRateNumerator = BigInt.fromI32(10000).plus(basisPoints)
+            let principal = repaymentAmount.times(BigInt.fromI32(10000)).div(returnRateNumerator)
+
+            // Calculate interest: repaymentAmount - principal
+            let interestEarned = repaymentAmount.minus(principal)
+
+            account.totalInterestEarned = account.totalInterestEarned.plus(interestEarned)
+            account.save()
+        }
+
         createTransaction(event, token, "REPAY", toAccountId)
     } else if (toPool) {
         let fromAccountId = fromAccount ? fromAccount.id : event.params.from.toHexString()
