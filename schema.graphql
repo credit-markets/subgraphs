@@ -10,6 +10,7 @@ type Account @entity {
   holdings: [Holding!]! @derivedFrom(field: "account")
   investments: [Investment!]! @derivedFrom(field: "account")
   transactions: [Transaction!]! @derivedFrom(field: "account")
+  monthlyData: [UserMonthlyData!]! @derivedFrom(field: "account")
   kycAttestationUID: Bytes! # UID of the KYC attestation, all zeros if revoked or not set
   kycLevel: Int! # KYC level of the account, 0 if revoked or not set
   totalInterestEarned: BigInt! # New field to track total interest earned
@@ -86,6 +87,13 @@ type TVLDayData @entity {
   timestamp: BigInt!
 }
 
+type UserMonthlyData @entity {
+  id: ID! # Composite key: account address + month timestamp
+  account: Account!
+  interest: BigInt!
+  principal: BigInt!
+  timestamp: BigInt! # Start of the month timestamp
+}
 enum TransactionTag {
   DEPOSIT
   WITHDRAW

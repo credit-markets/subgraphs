@@ -1,5 +1,5 @@
 import { Transfer as TransferEvent } from "../generated/templates/Token/ERC20"
-import { Token, Account, Holding, Transaction, Pool } from "../generated/schema"
+import { Token, Account, Holding, Transaction, Pool, UserMonthlyData } from "../generated/schema"
 import { BigInt } from "@graphprotocol/graph-ts"
 import { updateTVL } from "./analytics"
 
@@ -44,8 +44,12 @@ export function handleTransfer(event: TransferEvent): void {
             // Calculate interest: repaymentAmount - principal
             let interestEarned = repaymentAmount.minus(principal)
 
+            // Update total interest earned
             account.totalInterestEarned = account.totalInterestEarned.plus(interestEarned)
             account.save()
+
+            // Update monthly data
+            updateMonthlyData(account, principal, interestEarned, event.block.timestamp)
         }
 
         createTransaction(event, token, "REPAY", toAccountId)
@@ -54,6 +58,25 @@ export function handleTransfer(event: TransferEvent): void {
         createTransaction(event, token, "INVEST", fromAccountId)
         updateTVL(event.params.value, event.block.timestamp)
     }
+}
+
+function updateMonthlyData(account: Account, principal: BigInt, interest: BigInt, timestamp: BigInt): void {
+    // Calculate start of the month timestamp
+    let monthTimestamp = timestamp.div(BigInt.fromI32(2629743)).times(BigInt.fromI32(2629743))
+    let monthlyDataId = account.id + "-" + monthTimestamp.toString()
+
+    let monthlyData = UserMonthlyData.load(monthlyDataId)
+    if (!monthlyData) {
+        monthlyData = new UserMonthlyData(monthlyDataId)
+        monthlyData.account = account.id
+        monthlyData.timestamp = monthTimestamp
+        monthlyData.principal = BigInt.fromI32(0)
+        monthlyData.interest = BigInt.fromI32(0)
+    }
+
+    monthlyData.principal = monthlyData.principal.plus(principal)
+    monthlyData.interest = monthlyData.interest.plus(interest)
+    monthlyData.save()
 }
 
 function updateHolding(account: Account, token: Token, changeAmount: BigInt): void {
