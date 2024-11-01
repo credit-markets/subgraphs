@@ -59,7 +59,7 @@ export function handleRepaid(event: RepaidEvent): void {
     if (pool) {
         pool.repaid = true
         pool.save()
-        updateTVL(pool.totalInvested.neg())
+        updateTVL(pool.totalInvested.neg(), event.block.timestamp)
     }
 }
 

@@ -13,18 +13,17 @@ export function getOrCreateAnalytics(): Analytics {
     return analytics as Analytics
 }
 
-export function updateTVL(changeAmount: BigInt): void {
+export function updateTVL(changeAmount: BigInt, blockTimestamp: BigInt): void {
     let analytics = getOrCreateAnalytics()
     analytics.tvl = analytics.tvl.plus(changeAmount)
     analytics.save()
 
     // Update daily TVL data
-    updateTVLDayData(analytics.tvl)
+    updateTVLDayData(analytics.tvl, blockTimestamp)
 }
 
-function updateTVLDayData(currentTVL: BigInt): void {
-    let timestamp = BigInt.fromI32((Date.now() / 1000) as i32)
-    let dayID = timestamp.div(BigInt.fromI32(86400)) // Get current day by dividing by seconds in a day
+function updateTVLDayData(currentTVL: BigInt, blockTimestamp: BigInt): void {
+    let dayID = blockTimestamp.div(BigInt.fromI32(86400)) // Get current day by dividing by seconds in a day
     let dayStartTimestamp = dayID.times(BigInt.fromI32(86400))
     let tvlDayData = TVLDayData.load(dayID.toString())
 

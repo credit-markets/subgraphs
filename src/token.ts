@@ -34,7 +34,7 @@ export function handleTransfer(event: TransferEvent): void {
     } else if (toPool) {
         let fromAccountId = fromAccount ? fromAccount.id : event.params.from.toHexString()
         createTransaction(event, token, "INVEST", fromAccountId)
-        updateTVL(event.params.value)
+        updateTVL(event.params.value, event.block.timestamp)
     }
 }
 
