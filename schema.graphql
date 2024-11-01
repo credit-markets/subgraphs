@@ -79,6 +79,12 @@ type Analytics @entity {
   totalPools: Int!
 }
 
+type TVLDayData @entity {
+  id: ID! # Timestamp for the start of the day
+  tvl: BigInt!
+  timestamp: BigInt!
+}
+
 enum TransactionTag {
   DEPOSIT
   WITHDRAW

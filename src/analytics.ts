@@ -1,5 +1,5 @@
 import { BigInt } from "@graphprotocol/graph-ts"
-import { Analytics } from "../generated/schema"
+import { Analytics, TVLDayData } from "../generated/schema"
 
 export function getOrCreateAnalytics(): Analytics {
     let analytics = Analytics.load("1")
@@ -17,6 +17,24 @@ export function updateTVL(changeAmount: BigInt): void {
     let analytics = getOrCreateAnalytics()
     analytics.tvl = analytics.tvl.plus(changeAmount)
     analytics.save()
+
+    // Update daily TVL data
+    updateTVLDayData(analytics.tvl)
+}
+
+function updateTVLDayData(currentTVL: BigInt): void {
+    let timestamp = BigInt.fromI32((Date.now() / 1000) as i32)
+    let dayID = timestamp.div(BigInt.fromI32(86400)) // Get current day by dividing by seconds in a day
+    let dayStartTimestamp = dayID.times(BigInt.fromI32(86400))
+    let tvlDayData = TVLDayData.load(dayID.toString())
+
+    if (!tvlDayData) {
+        tvlDayData = new TVLDayData(dayID.toString())
+        tvlDayData.timestamp = dayStartTimestamp
+    }
+
+    tvlDayData.tvl = currentTVL
+    tvlDayData.save()
 }
 
 export function incrementTotalInvestors(): void {

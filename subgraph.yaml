@@ -8,7 +8,7 @@ dataSources:
     source:
       abi: Registry
       address: "0xE4b24A53719c50f2a0d686cE3504A877c3A6690E"
-      startBlock: 83769567
+      startBlock: 84337657
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
