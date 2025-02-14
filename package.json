@@ -4,9 +4,9 @@
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
-    "create": "graph create --node https://api.thegraph.com/deploy/ INA-protocol/ina-subgraphs",
-    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ INA-protocol/ina-subgraphs",
-    "remove": "graph remove --node node https://api.thegraph.com/deploy/ INA-protocol/ina-subgraphs",
+    "create": "graph create --node https://api.thegraph.com/deploy/ credit-markets",
+    "deploy": "graph deploy credit-markets",
+    "remove": "graph remove --node node https://api.thegraph.com/deploy/ credit-markets",
     "test": "graph test"
   },
   "dependencies": {
