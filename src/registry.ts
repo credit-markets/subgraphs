@@ -10,11 +10,11 @@ import {
 } from "../generated/Registry/Registry";
 import { Factory, Pool, Token, Account } from "../generated/schema";
 import {
-  InaAccountFactory,
+  CMAccountFactory,
   Token as TokenTemplate,
-  InaPool,
+  CMPool,
 } from "../generated/templates";
-import { InaPool as InaPoolContract } from "../generated/templates/InaPool/InaPool";
+import { CMPool as CMPoolContract } from "../generated/templates/CMPool/CMPool";
 import { store, BigInt, Bytes } from "@graphprotocol/graph-ts";
 import { ERC20 } from "../generated/templates/Token/ERC20";
 import { AggregatorV3Interface } from "../generated/templates/PriceFeed/AggregatorV3Interface";
@@ -30,7 +30,7 @@ export function handleFactoryAdded(event: FactoryAddedEvent): void {
   factory.save();
 
   // Dynamically create a new data source for the added factory
-  InaAccountFactory.create(event.params.factoryAddress);
+  CMAccountFactory.create(event.params.factoryAddress);
 }
 
 // Handle FactoryRemoved event
@@ -50,23 +50,23 @@ export function handlePoolAdded(event: PoolAddedEvent): void {
     let pool = Pool.load(poolAddress.toHexString());
     if (!pool) {
       pool = new Pool(poolAddress.toHexString());
-      // Bind the InaPool contract
-      let inaPoolContract = InaPoolContract.bind(poolAddress);
+      // Bind the CMPool contract
+      let cmPoolContract = CMPoolContract.bind(poolAddress);
 
       // Use try_* methods for all contract calls
-      let assetResult = inaPoolContract.try_asset();
-      let nameResult = inaPoolContract.try_name();
-      let symbolResult = inaPoolContract.try_symbol();
-      let startTimeResult = inaPoolContract.try_startTime();
-      let endTimeResult = inaPoolContract.try_endTime();
-      let thresholdResult = inaPoolContract.try_threshold();
-      let amountToRaiseResult = inaPoolContract.try_amountToRaise();
-      let feeBasisPointsResult = inaPoolContract.try_feeBasisPoints();
+      let assetResult = cmPoolContract.try_asset();
+      let nameResult = cmPoolContract.try_name();
+      let symbolResult = cmPoolContract.try_symbol();
+      let startTimeResult = cmPoolContract.try_startTime();
+      let endTimeResult = cmPoolContract.try_endTime();
+      let thresholdResult = cmPoolContract.try_threshold();
+      let amountToRaiseResult = cmPoolContract.try_amountToRaise();
+      let feeBasisPointsResult = cmPoolContract.try_feeBasisPoints();
       let estimatedReturnBasisPointsResult =
-        inaPoolContract.try_estimatedReturnBasisPoints();
-      let creditFacilitatorResult = inaPoolContract.try_creditFacilitator();
-      let kycLevelResult = inaPoolContract.try_kycLevel();
-      let termResult = inaPoolContract.try_term();
+        cmPoolContract.try_estimatedReturnBasisPoints();
+      let creditFacilitatorResult = cmPoolContract.try_creditFacilitator();
+      let kycLevelResult = cmPoolContract.try_kycLevel();
+      let termResult = cmPoolContract.try_term();
 
       // Handle the asset token reference
       if (!assetResult.reverted) {
@@ -119,8 +119,8 @@ export function handlePoolAdded(event: PoolAddedEvent): void {
       incrementTotalPools();
       pool.save();
 
-      // Create a new InaPool data source
-      InaPool.create(poolAddress);
+      // Create a new CMPool data source
+      CMPool.create(poolAddress);
     }
   }
 }

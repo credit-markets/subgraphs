@@ -1,6 +1,6 @@
-# INA Protocol Subgraph
+# CM Protocol Subgraph
 
-This subgraph indexes events from the INA Protocol on the Arbitrum Sepolia network. It tracks factories, accounts, pools, tokens, and token transactions.
+This subgraph indexes events from the CM Protocol on the Arbitrum Sepolia network. It tracks factories, accounts, pools, tokens, and token transactions.
 
 ## Setup
 
@@ -42,14 +42,14 @@ To deploy the subgraph:
 - `subgraph.yaml`: Configuration file that defines the data sources and mappings.
 - `src/`:
   - `registry.ts`: Handles events from the Registry contract.
-  - `factory.ts`: Handles events from the InaAccountFactory contract.
+  - `factory.ts`: Handles events from the CMAccountFactory contract.
   - `account.ts`: Handles events from the MultiOwnerLightAccount contract.
   - `token.ts`: Handles ERC20 token transfer events.
 - `abis/`: Contains the ABIs for the contracts being indexed.
 
 ## Entities
 
-- `Factory`: Represents an INA Protocol factory.
+- `Factory`: Represents an CM Protocol factory.
 - `Account`: Represents an account created by a factory.
 - `Pool`: Represents a pool in the protocol.
 - `Token`: Represents an ERC20 token supported by the protocol.

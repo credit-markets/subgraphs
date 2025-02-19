@@ -1,5 +1,5 @@
 {
-  "name": "ina-subgraphs",
+  "name": "cm-subgraph",
   "license": "UNLICENSED",
   "scripts": {
     "codegen": "graph codegen",

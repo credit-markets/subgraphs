@@ -56,7 +56,7 @@
     "inputs": [
       {
         "indexed": true,
-        "internalType": "contract InaAccountFactory",
+        "internalType": "contract CMAccountFactory",
         "name": "factoryAddress",
         "type": "address"
       }
@@ -69,7 +69,7 @@
     "inputs": [
       {
         "indexed": true,
-        "internalType": "contract InaAccountFactory",
+        "internalType": "contract CMAccountFactory",
         "name": "factoryAddress",
         "type": "address"
       }
@@ -354,7 +354,7 @@
   {
     "inputs": [
       {
-        "internalType": "contract InaAccountFactory",
+        "internalType": "contract CMAccountFactory",
         "name": "factoryAddress",
         "type": "address"
       }
@@ -567,7 +567,7 @@
   {
     "inputs": [
       {
-        "internalType": "contract InaAccountFactory",
+        "internalType": "contract CMAccountFactory",
         "name": "factoryAddress",
         "type": "address"
       }

@@ -25,8 +25,8 @@ dataSources:
           file: ./abis/ERC20.json
         - name: AggregatorV3Interface
           file: ./abis/AggregatorV3Interface.json
-        - name: InaPool
-          file: ./abis/InaPool.json
+        - name: CMPool
+          file: ./abis/CMPool.json
       eventHandlers:
         - event: FactoryAdded(indexed address)
           handler: handleFactoryAdded
@@ -47,10 +47,10 @@ dataSources:
       file: ./src/registry.ts
 templates:
   - kind: ethereum/contract
-    name: InaAccountFactory
+    name: CMAccountFactory
     network: arbitrum-sepolia
     source:
-      abi: InaAccountFactory
+      abi: CMAccountFactory
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -58,11 +58,11 @@ templates:
       entities:
         - Account
       abis:
-        - name: InaAccountFactory
-          file: ./abis/InaAccountFactory.json
+        - name: CMAccountFactory
+          file: ./abis/CMAccountFactory.json
       eventHandlers:
         - event: AccountCreated(indexed address,address[])
-          handler: handleInaAccountCreated
+          handler: handleCMAccountCreated
       file: ./src/factory.ts
   - kind: ethereum/contract
     name: MultiOwnerLightAccount
@@ -122,10 +122,10 @@ templates:
           handler: handleAnswerUpdated
       file: ./src/price-feed.ts
   - kind: ethereum/contract
-    name: InaPool
+    name: CMPool
     network: arbitrum-sepolia
     source:
-      abi: InaPool
+      abi: CMPool
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -136,8 +136,8 @@ templates:
         - Investment
         - Transaction
       abis:
-        - name: InaPool
-          file: ./abis/InaPool.json
+        - name: CMPool
+          file: ./abis/CMPool.json
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handlePoolTransfer

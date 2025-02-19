@@ -1,12 +1,12 @@
 import {
     AccountCreated,
-} from "../generated/templates/InaAccountFactory/InaAccountFactory"
+} from "../generated/templates/CMAccountFactory/CMAccountFactory"
 import { Account } from "../generated/schema"
 import { Bytes, BigInt } from "@graphprotocol/graph-ts"
 import { MultiOwnerLightAccount } from "../generated/templates"
 
 // Handle LightAccountInitialized event
-export function handleInaAccountCreated(event: AccountCreated): void {
+export function handleCMAccountCreated(event: AccountCreated): void {
     // Create a new Account entity using the accountAddress from the event params
     let account = new Account(event.params.accountAddress.toHexString())
 

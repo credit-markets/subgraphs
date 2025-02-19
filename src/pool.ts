@@ -3,7 +3,7 @@ import {
     Repaid as RepaidEvent,
     Refunded as RefundedEvent,
     Transfer as TransferEvent
-} from "../generated/templates/InaPool/InaPool"
+} from "../generated/templates/CMPool/CMPool"
 import { Pool, Account, Investment } from "../generated/schema"
 import { BigInt } from "@graphprotocol/graph-ts"
 import { updateTVL, incrementTotalInvestors } from "./analytics"
