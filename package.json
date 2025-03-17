@@ -2,16 +2,13 @@
   "name": "cm-subgraph",
   "license": "UNLICENSED",
   "scripts": {
-    "codegen": "graph codegen",
-    "build": "graph build",
-    "create": "graph create --node https://api.thegraph.com/deploy/ credit-markets",
-    "deploy": "graph deploy credit-markets",
-    "remove": "graph remove --node node https://api.thegraph.com/deploy/ credit-markets",
+    "deploy": "./deploy.sh",
     "test": "graph test"
   },
   "dependencies": {
     "@graphprotocol/graph-cli": "0.73.0",
-    "@graphprotocol/graph-ts": "0.32.0"
+    "@graphprotocol/graph-ts": "0.32.0",
+    "dotenv": "^16.4.7"
   },
   "devDependencies": {
     "matchstick-as": "0.5.0"

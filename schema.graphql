@@ -27,7 +27,7 @@ type Pool @entity {
   amountToRaise: BigInt!
   feeBasisPoints: BigInt!
   estimatedReturnBasisPoints: BigInt!
-  creditFacilitator: Bytes!
+  creditFacilitator: CreditFacilitator!
   term: BigInt!
   totalInvested: BigInt!
   fundsTaken: Boolean!
@@ -94,9 +94,28 @@ type UserMonthlyData @entity {
   principal: BigInt!
   timestamp: BigInt! # Start of the month timestamp
 }
+
 enum TransactionTag {
   DEPOSIT
   WITHDRAW
   INVEST
   REPAY
+  BORROW
+  REPAYMENT
+}
+
+type CreditFacilitator @entity {
+  id: ID! # Credit Facilitator address (same as user account)
+  account: Account! # Reference to the user account
+  active: Boolean! # Whether the CF still has the role
+  pools: [Pool!]! @derivedFrom(field: "creditFacilitator")
+  monthlyData: [CFMonthlyData!]! @derivedFrom(field: "creditFacilitator")
+}
+
+type CFMonthlyData @entity {
+  id: ID! # Composite key: CF address + month timestamp
+  creditFacilitator: CreditFacilitator!
+  timestamp: BigInt! # Start of the month timestamp
+  borrowedAmount: BigInt!
+  repaidAmount: BigInt!
 }

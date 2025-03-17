@@ -1,5 +1,5 @@
 import { Transfer as TransferEvent } from "../generated/templates/Token/ERC20"
-import { Token, Account, Holding, Transaction, Pool, UserMonthlyData } from "../generated/schema"
+import { Token, Account, Holding, Transaction, Pool, UserMonthlyData, CreditFacilitator } from "../generated/schema"
 import { BigInt } from "@graphprotocol/graph-ts"
 import { updateTVL } from "./analytics"
 
@@ -13,6 +13,10 @@ export function handleTransfer(event: TransferEvent): void {
     // Check if this is a transfer to or from a pool
     let fromPool = Pool.load(event.params.from.toHexString())
     let toPool = Pool.load(event.params.to.toHexString())
+
+    // Check if this involves a Credit Facilitator
+    let fromCF = CreditFacilitator.load(event.params.from.toHexString())
+    let toCF = CreditFacilitator.load(event.params.to.toHexString())
 
     if (fromAccount) {
         updateHolding(fromAccount, token, event.params.value.neg())
@@ -28,7 +32,25 @@ export function handleTransfer(event: TransferEvent): void {
         }
     }
 
-    if (fromPool) {
+    // Handle specific transaction types
+    if (fromPool && toCF && fromPool.creditFacilitator == toCF.id) {
+        // This is a BORROW transaction (funds taken by CF)
+        createTransaction(
+            event,
+            token,
+            "BORROW",
+            toCF.id
+        )
+    }
+    else if (fromCF && toPool && toPool.creditFacilitator == fromCF.id) {
+        // This is a REPAYMENT transaction (CF repaying the pool)
+        createTransaction(
+            event,
+            token,
+            "REPAYMENT",
+            fromCF.id
+        )
+    } else if (fromPool) {
         let toAccountId = toAccount ? toAccount.id : event.params.to.toHexString()
 
         // Calculate principal and interest using estimatedReturnBasisPoints

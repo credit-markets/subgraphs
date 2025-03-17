@@ -7,8 +7,8 @@ dataSources:
     network: arbitrum-sepolia
     source:
       abi: Registry
-      address: "0xE4b24A53719c50f2a0d686cE3504A877c3A6690E"
-      startBlock: 84337657
+      address: "0xFF877cD9ffeb7e7d1bEc6158F6bAb2fDc6D79e68"
+      startBlock: 133136571
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -44,6 +44,10 @@ dataSources:
           handler: handleKYCAttested
         - event: KYCRevoked(indexed address,bytes32)
           handler: handleKYCRevoked
+        - event: RoleGranted(indexed bytes32,indexed address,indexed address)
+          handler: handleRoleGranted
+        - event: RoleRevoked(indexed bytes32,indexed address,indexed address)
+          handler: handleRoleRevoked
       file: ./src/registry.ts
 templates:
   - kind: ethereum/contract

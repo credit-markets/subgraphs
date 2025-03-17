@@ -301,6 +301,19 @@
   },
   {
     "inputs": [],
+    "name": "CREDIT_FACILITATOR_ROLE",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "DEFAULT_ADMIN_ROLE",
     "outputs": [
       {
@@ -484,6 +497,19 @@
         "type": "address"
       }
     ],
+    "name": "grantCFRole",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
     "name": "grantOperatorRole",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -630,6 +656,19 @@
       }
     ],
     "name": "revokeAttesterRole",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "revokeCFRole",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

@@ -7,8 +7,11 @@ import {
   TokenRemoved as TokenRemovedEvent,
   KYCAttested as KYCAttestedEvent,
   KYCRevoked as KYCRevokedEvent,
+  RoleGranted as RoleGrantedEvent,
+  RoleRevoked as RoleRevokedEvent,
+  Registry
 } from "../generated/Registry/Registry";
-import { Factory, Pool, Token, Account } from "../generated/schema";
+import { Factory, Pool, Token, Account, CreditFacilitator } from "../generated/schema";
 import {
   CMAccountFactory,
   Token as TokenTemplate,
@@ -104,8 +107,8 @@ export function handlePoolAdded(event: PoolAddedEvent): void {
           ? BigInt.fromI32(0)
           : estimatedReturnBasisPointsResult.value;
       pool.creditFacilitator = creditFacilitatorResult.reverted
-        ? Bytes.fromHexString("0x0000000000000000000000000000000000000000")
-        : Bytes.fromHexString(creditFacilitatorResult.value.toHexString());
+        ? "0x0000000000000000000000000000000000000000"
+        : creditFacilitatorResult.value.toHexString();
       pool.kycLevel = kycLevelResult.reverted
         ? BigInt.fromI32(0)
         : kycLevelResult.value;
@@ -206,5 +209,49 @@ export function handleKYCRevoked(event: KYCRevokedEvent): void {
     );
     account.kycLevel = 0;
     account.save();
+  }
+}
+
+// These are the event handlers
+export function handleRoleGranted(event: RoleGrantedEvent): void {
+  // Get the registry contract to check the CF role constant
+  let registry = Registry.bind(event.address)
+  let cfRoleResult = registry.try_CREDIT_FACILITATOR_ROLE()
+
+  // Check if this is granting the CF role
+  if (!cfRoleResult.reverted && event.params.role.equals(cfRoleResult.value)) {
+    let cfId = event.params.account.toHexString()
+    let accountEntity = Account.load(cfId)
+
+    if (accountEntity) {
+      // Create or update the CF entity
+      let cf = CreditFacilitator.load(cfId)
+      if (!cf) {
+        cf = new CreditFacilitator(cfId)
+        cf.account = accountEntity.id
+        cf.active = true
+        cf.save()
+      } else if (!cf.active) {
+        cf.active = true
+        cf.save()
+      }
+    }
+  }
+}
+
+export function handleRoleRevoked(event: RoleRevokedEvent): void {
+  // Get the registry contract to check the CF role constant
+  let registry = Registry.bind(event.address)
+  let cfRoleResult = registry.try_CREDIT_FACILITATOR_ROLE()
+
+  // Check if this is revoking the CF role
+  if (!cfRoleResult.reverted && event.params.role.equals(cfRoleResult.value)) {
+    let cfId = event.params.account.toHexString()
+    let cf = CreditFacilitator.load(cfId)
+
+    if (cf) {
+      cf.active = false
+      cf.save()
+    }
   }
 }
