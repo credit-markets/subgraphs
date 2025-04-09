@@ -7,7 +7,7 @@ dataSources:
     network: arbitrum-sepolia
     source:
       abi: Registry
-      address: "0xFF877cD9ffeb7e7d1bEc6158F6bAb2fDc6D79e68"
+      address: "0x28E33846999C579665df68aE032BE3b7f48B7538"
       startBlock: 133136571
     mapping:
       kind: ethereum/events
