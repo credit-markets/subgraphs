@@ -9,9 +9,15 @@ import {
   KYCRevoked as KYCRevokedEvent,
   RoleGranted as RoleGrantedEvent,
   RoleRevoked as RoleRevokedEvent,
-  Registry
+  Registry,
 } from "../generated/Registry/Registry";
-import { Factory, Pool, Token, Account, CreditFacilitator } from "../generated/schema";
+import {
+  Factory,
+  Pool,
+  Token,
+  Account,
+  CreditFacilitator,
+} from "../generated/schema";
 import {
   CMAccountFactory,
   Token as TokenTemplate,
@@ -76,13 +82,32 @@ export function handlePoolAdded(event: PoolAddedEvent): void {
         let tokenAddress = assetResult.value;
         let token = Token.load(tokenAddress.toHexString());
         if (!token) {
-          // If the token doesn't exist in our entities yet, we should skip this pool
-          return;
+          // Instead of skipping the pool, create a minimal token record
+          token = new Token(tokenAddress.toHexString());
+          token.name = "Unknown Token";
+          token.symbol = "UNKNOWN";
+          token.decimals = 18;
+          token.priceFeedAddress = poolAddress; // Temporary value
+          token.lastPrice = BigInt.fromI32(0);
+          token.lastUpdate = BigInt.fromI32(0);
+          token.save();
         }
         pool.asset = token.id;
       } else {
-        // If we can't get the asset address, we should skip this pool
-        return;
+        // If asset address reverted, set a default placeholder
+        let defaultTokenId = "0x0000000000000000000000000000000000000000";
+        let defaultToken = Token.load(defaultTokenId);
+        if (!defaultToken) {
+          defaultToken = new Token(defaultTokenId);
+          defaultToken.name = "Default Token";
+          defaultToken.symbol = "DEFAULT";
+          defaultToken.decimals = 18;
+          defaultToken.priceFeedAddress = poolAddress; // Temporary value
+          defaultToken.lastPrice = BigInt.fromI32(0);
+          defaultToken.lastUpdate = BigInt.fromI32(0);
+          defaultToken.save();
+        }
+        pool.asset = defaultToken.id;
       }
 
       pool.name = nameResult.reverted ? "" : nameResult.value;
@@ -120,7 +145,6 @@ export function handlePoolAdded(event: PoolAddedEvent): void {
 
       pool.save();
       incrementTotalPools();
-      pool.save();
 
       // Create a new CMPool data source
       CMPool.create(poolAddress);
@@ -215,25 +239,25 @@ export function handleKYCRevoked(event: KYCRevokedEvent): void {
 // These are the event handlers
 export function handleRoleGranted(event: RoleGrantedEvent): void {
   // Get the registry contract to check the CF role constant
-  let registry = Registry.bind(event.address)
-  let cfRoleResult = registry.try_CREDIT_FACILITATOR_ROLE()
+  let registry = Registry.bind(event.address);
+  let cfRoleResult = registry.try_CREDIT_FACILITATOR_ROLE();
 
   // Check if this is granting the CF role
   if (!cfRoleResult.reverted && event.params.role.equals(cfRoleResult.value)) {
-    let cfId = event.params.account.toHexString()
-    let accountEntity = Account.load(cfId)
+    let cfId = event.params.account.toHexString();
+    let accountEntity = Account.load(cfId);
 
     if (accountEntity) {
       // Create or update the CF entity
-      let cf = CreditFacilitator.load(cfId)
+      let cf = CreditFacilitator.load(cfId);
       if (!cf) {
-        cf = new CreditFacilitator(cfId)
-        cf.account = accountEntity.id
-        cf.active = true
-        cf.save()
+        cf = new CreditFacilitator(cfId);
+        cf.account = accountEntity.id;
+        cf.active = true;
+        cf.save();
       } else if (!cf.active) {
-        cf.active = true
-        cf.save()
+        cf.active = true;
+        cf.save();
       }
     }
   }
@@ -241,17 +265,17 @@ export function handleRoleGranted(event: RoleGrantedEvent): void {
 
 export function handleRoleRevoked(event: RoleRevokedEvent): void {
   // Get the registry contract to check the CF role constant
-  let registry = Registry.bind(event.address)
-  let cfRoleResult = registry.try_CREDIT_FACILITATOR_ROLE()
+  let registry = Registry.bind(event.address);
+  let cfRoleResult = registry.try_CREDIT_FACILITATOR_ROLE();
 
   // Check if this is revoking the CF role
   if (!cfRoleResult.reverted && event.params.role.equals(cfRoleResult.value)) {
-    let cfId = event.params.account.toHexString()
-    let cf = CreditFacilitator.load(cfId)
+    let cfId = event.params.account.toHexString();
+    let cf = CreditFacilitator.load(cfId);
 
     if (cf) {
-      cf.active = false
-      cf.save()
+      cf.active = false;
+      cf.save();
     }
   }
 }
