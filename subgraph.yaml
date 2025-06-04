@@ -151,4 +151,8 @@ templates:
           handler: handleRepaid
         - event: Refunded(indexed address,uint256)
           handler: handleRefunded
+        - event: PoolApproved(indexed address,uint256)
+          handler: handlePoolApproved
+        - event: AdminWithdrawal(indexed address,uint256,uint256)
+          handler: handleAdminWithdrawal
       file: ./src/pool.ts

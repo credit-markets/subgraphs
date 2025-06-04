@@ -34,6 +34,8 @@ type Pool @entity {
   repaid: Boolean!
   refunded: Boolean!
   kycLevel: BigInt!
+  approved: Boolean! # New field: Whether pool is approved by admin
+  lockupStartTime: BigInt! # New field: When the lock-up period starts (0 if not started)
   investments: [Investment!]! @derivedFrom(field: "pool")
 }
 

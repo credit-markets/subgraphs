@@ -143,6 +143,10 @@ export function handlePoolAdded(event: PoolAddedEvent): void {
       pool.repaid = false;
       pool.refunded = false;
 
+      // Initialize new fields for pool approval system
+      pool.approved = false; // Pools start as not approved
+      pool.lockupStartTime = BigInt.fromI32(0); // No lock-up until admin takes funds
+
       pool.save();
       incrementTotalPools();
 
