@@ -7,8 +7,8 @@ dataSources:
     network: arbitrum-sepolia
     source:
       abi: Registry
-      address: "0x7594B4D86BcC2745b42b6ea2bB039c1A4A7720Db"
-      startBlock: 148053393
+      address: "0x9FB7f6EE9aAe78689d06Ff4a7477440A620b21B7"
+      startBlock: 171221917
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -40,10 +40,10 @@ dataSources:
           handler: handleTokenAdded
         - event: TokenRemoved(address[])
           handler: handleTokenRemoved
-        - event: KYCAttested(indexed address,uint256,uint256,bytes32)
-          handler: handleKYCAttested
-        - event: KYCRevoked(indexed address,bytes32)
-          handler: handleKYCRevoked
+        - event: KycAttested(indexed address,uint256,uint256,bytes32)
+          handler: handleKycAttested
+        - event: KycRevoked(indexed address,bytes32)
+          handler: handleKycRevoked
         - event: RoleGranted(indexed bytes32,indexed address,indexed address)
           handler: handleRoleGranted
         - event: RoleRevoked(indexed bytes32,indexed address,indexed address)

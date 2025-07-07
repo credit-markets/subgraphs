@@ -5,8 +5,8 @@ import {
   PoolRemoved as PoolRemovedEvent,
   TokenAdded as TokenAddedEvent,
   TokenRemoved as TokenRemovedEvent,
-  KYCAttested as KYCAttestedEvent,
-  KYCRevoked as KYCRevokedEvent,
+  KycAttested as KycAttestedEvent,
+  KycRevoked as KycRevokedEvent,
   RoleGranted as RoleGrantedEvent,
   RoleRevoked as RoleRevokedEvent,
   Registry,
@@ -66,16 +66,16 @@ export function handlePoolAdded(event: PoolAddedEvent): void {
       let assetResult = cmPoolContract.try_asset();
       let nameResult = cmPoolContract.try_name();
       let symbolResult = cmPoolContract.try_symbol();
-      let startTimeResult = cmPoolContract.try_startTime();
-      let endTimeResult = cmPoolContract.try_endTime();
-      let thresholdResult = cmPoolContract.try_threshold();
-      let amountToRaiseResult = cmPoolContract.try_amountToRaise();
-      let feeBasisPointsResult = cmPoolContract.try_feeBasisPoints();
+      let startTimeResult = cmPoolContract.try_START_TIME();
+      let endTimeResult = cmPoolContract.try_END_TIME();
+      let thresholdResult = cmPoolContract.try_THRESHOLD();
+      let amountToRaiseResult = cmPoolContract.try_AMOUNT_TO_RAISE();
+      let feeBasisPointsResult = cmPoolContract.try_FEE_BASIS_POINTS();
       let estimatedReturnBasisPointsResult =
-        cmPoolContract.try_estimatedReturnBasisPoints();
-      let creditFacilitatorResult = cmPoolContract.try_creditFacilitator();
-      let kycLevelResult = cmPoolContract.try_kycLevel();
-      let termResult = cmPoolContract.try_term();
+        cmPoolContract.try_ESTIMATED_RETURN_BASIS_POINTS();
+      let creditFacilitatorResult = cmPoolContract.try_CREDIT_FACILITATOR();
+      let kycLevelResult = cmPoolContract.try_KYC_LEVEL();
+      let termResult = cmPoolContract.try_TERM();
 
       // Handle the asset token reference
       if (!assetResult.reverted) {
@@ -214,21 +214,21 @@ export function handleTokenRemoved(event: TokenRemovedEvent): void {
   }
 }
 
-// Handle KYCAttested event
-export function handleKYCAttested(event: KYCAttestedEvent): void {
+// Handle KycAttested event
+export function handleKycAttested(event: KycAttestedEvent): void {
   let account = Account.load(event.params.smartWallet.toHexString());
   if (account) {
-    account.kycAttestationUID = event.params.attestationUID;
+    account.kycAttestationUid = event.params.attestationUid;
     account.kycLevel = event.params.kycLevel.toI32();
     account.save();
   }
 }
 
-// Handle KYCRevoked event
-export function handleKYCRevoked(event: KYCRevokedEvent): void {
+// Handle KycRevoked event
+export function handleKycRevoked(event: KycRevokedEvent): void {
   let account = Account.load(event.params.smartWallet.toHexString());
   if (account) {
-    account.kycAttestationUID = Bytes.fromHexString(
+    account.kycAttestationUid = Bytes.fromHexString(
       "0x0000000000000000000000000000000000000000000000000000000000000000"
     );
     account.kycLevel = 0;

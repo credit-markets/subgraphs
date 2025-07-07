@@ -5,13 +5,13 @@
 source .env
 
 # Generate code
-graph codegen
+npx graph codegen
 
 # Build the subgraph
-graph build
+npx graph build
 
 # Deploy
-graph deploy credit-markets \
+npx graph deploy credit-markets \
   --version-label $(date +%s) \
   --node https://subgraphs.alchemy.com/api/subgraphs/deploy \
   --deploy-key $DEPLOY_KEY \
