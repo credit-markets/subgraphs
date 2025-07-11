@@ -1,6 +1,6 @@
-# INA Credit Markets Subgraph
+# Credit Markets Subgraph
 
-A comprehensive subgraph for indexing the INA Credit Markets Protocol on Arbitrum Sepolia. This subgraph tracks user accounts, token holdings, pool investments, transactions, and protocol analytics.
+A comprehensive subgraph for indexing the Credit Markets Protocol on Arbitrum Sepolia. This subgraph tracks user accounts, token holdings, pool investments, transactions, and protocol analytics.
 
 ## Table of Contents
 
@@ -20,7 +20,7 @@ A comprehensive subgraph for indexing the INA Credit Markets Protocol on Arbitru
 
 ## Overview
 
-The INA Credit Markets Subgraph indexes and aggregates data from the Credit Markets Protocol smart contracts, providing:
+The Credit Markets Subgraph indexes and aggregates data from the Credit Markets Protocol smart contracts, providing:
 
 - **Account Tracking**: Smart wallet creation and ownership
 - **Token Management**: ERC20 token holdings and transfers
@@ -40,17 +40,20 @@ The INA Credit Markets Subgraph indexes and aggregates data from the Credit Mark
 ## Installation
 
 1. Clone the repository:
+
 ```bash
 git clone <repository-url>
 cd ina-subgraphs
 ```
 
 2. Install dependencies:
+
 ```bash
 pnpm install
 ```
 
 3. Set up environment variables:
+
 ```bash
 cp .env.example .env
 # Edit .env and add your DEPLOY_KEY from Alchemy
@@ -263,7 +266,7 @@ ina-subgraphs/
     totalTVL
     totalTransactions
   }
-  
+
   tvlDayDatas(first: 30, orderBy: date, orderDirection: desc) {
     date
     tvl
@@ -276,11 +279,7 @@ ina-subgraphs/
 
 ```graphql
 {
-  transactions(
-    first: 20
-    orderBy: timestamp
-    orderDirection: desc
-  ) {
+  transactions(first: 20, orderBy: timestamp, orderDirection: desc) {
     id
     from
     to
@@ -335,6 +334,7 @@ npm run deploy-local
 ### Common Issues
 
 1. **Build Errors**
+
    ```bash
    # Clear generated files and rebuild
    rm -rf generated/
@@ -343,6 +343,7 @@ npm run deploy-local
    ```
 
 2. **Docker Issues**
+
    ```bash
    # Reset local environment
    docker-compose down -v
@@ -350,6 +351,7 @@ npm run deploy-local
    ```
 
 3. **Deployment Fails**
+
    - Check DEPLOY_KEY is correct
    - Ensure subgraph builds successfully
    - Verify contract addresses in subgraph.yaml
@@ -361,6 +363,7 @@ npm run deploy-local
 ### Debug Mode
 
 Enable debug logging in docker-compose.yml:
+
 ```yaml
 GRAPH_LOG: debug
 ```
@@ -368,16 +371,19 @@ GRAPH_LOG: debug
 ## Best Practices
 
 1. **Schema Design**
+
    - Use lowercase for entity names
    - Add proper field descriptions
    - Index frequently queried fields
 
 2. **Mapping Handlers**
+
    - Keep handlers focused and efficient
    - Use early returns to skip unnecessary processing
    - Handle null values properly
 
 3. **Testing**
+
    - Write tests for critical business logic
    - Test edge cases and error conditions
    - Use mock events for testing
