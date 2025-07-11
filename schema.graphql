@@ -11,8 +11,8 @@ type Account @entity {
   investments: [Investment!]! @derivedFrom(field: "account")
   transactions: [Transaction!]! @derivedFrom(field: "account")
   monthlyData: [UserMonthlyData!]! @derivedFrom(field: "account")
-  kycAttestationUID: Bytes! # UID of the KYC attestation, all zeros if revoked or not set
-  kycLevel: Int! # KYC level of the account, 0 if revoked or not set
+  kycAttestationUid: Bytes! # Uid of the Kyc attestation, all zeros if revoked or not set
+  kycLevel: Int! # Kyc level of the account, 0 if revoked or not set
   totalInterestEarned: BigInt! # New field to track total interest earned
 }
 

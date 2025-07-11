@@ -40,10 +40,10 @@ dataSources:
           handler: handleTokenAdded
         - event: TokenRemoved(address[])
           handler: handleTokenRemoved
-        - event: KYCAttested(indexed address,uint256,uint256,bytes32)
-          handler: handleKYCAttested
-        - event: KYCRevoked(indexed address,bytes32)
-          handler: handleKYCRevoked
+        - event: KycAttested(indexed address,uint256,uint256,bytes32)
+          handler: handleKycAttested
+        - event: KycRevoked(indexed address,bytes32)
+          handler: handleKycRevoked
         - event: RoleGranted(indexed bytes32,indexed address,indexed address)
           handler: handleRoleGranted
         - event: RoleRevoked(indexed bytes32,indexed address,indexed address)
