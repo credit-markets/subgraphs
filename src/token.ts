@@ -1,12 +1,13 @@
 import { Transfer as TransferEvent } from "../generated/templates/Token/ERC20"
-import { Token, Account, Holding, Transaction, Pool, UserMonthlyData, CreditFacilitator } from "../generated/schema"
+import { Token, Account, Holding, Transaction, Pool, UserMonthlyData } from "../generated/schema"
 import { BigInt } from "@graphprotocol/graph-ts"
-import { updateTVL } from "./analytics"
+import { getMonthStartTimestamp, createCompositeId, calculateUSDValue } from "./utils"
 
 export function handleTransfer(event: TransferEvent): void {
     let token = Token.load(event.address.toHexString())
     if (!token) return
 
+    // Load accounts - they should exist from factory creation, but check anyway
     let fromAccount = Account.load(event.params.from.toHexString())
     let toAccount = Account.load(event.params.to.toHexString())
 
@@ -14,78 +15,64 @@ export function handleTransfer(event: TransferEvent): void {
     let fromPool = Pool.load(event.params.from.toHexString())
     let toPool = Pool.load(event.params.to.toHexString())
 
-    // Check if this involves a Credit Facilitator
-    let fromCF = CreditFacilitator.load(event.params.from.toHexString())
-    let toCF = CreditFacilitator.load(event.params.to.toHexString())
-
-    if (fromAccount) {
+    // Update holdings for accounts (not pools)
+    if (fromAccount && !fromPool) {
         updateHolding(fromAccount, token, event.params.value.neg())
-        if (!fromPool) {
-            createTransaction(event, token, "WITHDRAW", fromAccount.id)
-        }
+        // Account sending tokens (not from a pool) = WITHDRAW
+        createTransaction(event, token, "WITHDRAW", fromAccount.id)
     }
 
-    if (toAccount) {
+    if (toAccount && !toPool) {
         updateHolding(toAccount, token, event.params.value)
-        if (!toPool) {
-            createTransaction(event, token, "DEPOSIT", toAccount.id)
-        }
+        // Account receiving tokens (not to a pool) = DEPOSIT
+        createTransaction(event, token, "DEPOSIT", toAccount.id)
     }
 
-    // Handle specific transaction types
-    if (fromPool && toCF && fromPool.creditFacilitator == toCF.id) {
-        // This is a BORROW transaction (funds taken by CF)
-        createTransaction(
-            event,
-            token,
-            "BORROW",
-            toCF.id
-        )
-    }
-    else if (fromCF && toPool && toPool.creditFacilitator == fromCF.id) {
-        // This is a REPAYMENT transaction (CF repaying the pool)
-        createTransaction(
-            event,
-            token,
-            "REPAYMENT",
-            fromCF.id
-        )
-    } else if (fromPool) {
-        let toAccountId = toAccount ? toAccount.id : event.params.to.toHexString()
+    // Handle pool-specific transactions
+    if (fromPool && toAccount) {
+        // Only count as REPAY if after the term period (endTime + term)
+        let repaymentStartTime = fromPool.endTime.plus(fromPool.term)
+        
+        if (event.block.timestamp.ge(repaymentStartTime)) {
+            // This is during the repayment period
+            
+            // Calculate interest if pool has return basis points
+            if (fromPool.estimatedReturnBasisPoints.gt(BigInt.fromI32(0))) {
+                let repaymentAmount = event.params.value
+                let basisPoints = fromPool.estimatedReturnBasisPoints
 
-        // Calculate principal and interest using estimatedReturnBasisPoints
-        let account = Account.load(toAccountId)
-        if (account && fromPool.estimatedReturnBasisPoints) {
-            let repaymentAmount = event.params.value
-            let basisPoints = fromPool.estimatedReturnBasisPoints
+                // Calculate principal and interest
+                let returnRateNumerator = BigInt.fromI32(10000).plus(basisPoints)
+                let principal = repaymentAmount.times(BigInt.fromI32(10000)).div(returnRateNumerator)
+                let interestEarned = repaymentAmount.minus(principal)
 
-            // Calculate principal: repaymentAmount / (1 + returnRate)
-            let returnRateNumerator = BigInt.fromI32(10000).plus(basisPoints)
-            let principal = repaymentAmount.times(BigInt.fromI32(10000)).div(returnRateNumerator)
+                // Update total interest earned
+                toAccount.totalInterestEarned = toAccount.totalInterestEarned.plus(interestEarned)
+                toAccount.save()
 
-            // Calculate interest: repaymentAmount - principal
-            let interestEarned = repaymentAmount.minus(principal)
-
-            // Update total interest earned
-            account.totalInterestEarned = account.totalInterestEarned.plus(interestEarned)
-            account.save()
-
-            // Update monthly data
-            updateMonthlyData(account, principal, interestEarned, event.block.timestamp)
+                // Update monthly data
+                updateMonthlyData(toAccount, principal, interestEarned, event.block.timestamp)
+            }
+            
+            createTransaction(event, token, "REPAY", toAccount.id)
         }
-
-        createTransaction(event, token, "REPAY", toAccountId)
-    } else if (toPool) {
-        let fromAccountId = fromAccount ? fromAccount.id : event.params.from.toHexString()
-        createTransaction(event, token, "INVEST", fromAccountId)
-        updateTVL(event.params.value, event.block.timestamp)
+        // If before repayment period, it's admin operations - don't create transaction
+        
+    } else if (toPool && fromAccount) {
+        // Only count as INVEST if during the investment period (between startTime and endTime)
+        if (event.block.timestamp.ge(toPool.startTime) && event.block.timestamp.le(toPool.endTime)) {
+            createTransaction(event, token, "INVEST", fromAccount.id)
+            
+            // Note: TVL is updated in pool.ts when shares are minted, not here
+            // This avoids double-counting
+        }
+        // If outside investment period, it's admin operations - don't create transaction
     }
 }
 
 function updateMonthlyData(account: Account, principal: BigInt, interest: BigInt, timestamp: BigInt): void {
-    // Calculate start of the month timestamp
-    let monthTimestamp = timestamp.div(BigInt.fromI32(2629743)).times(BigInt.fromI32(2629743))
-    let monthlyDataId = account.id + "-" + monthTimestamp.toString()
+    let monthTimestamp = getMonthStartTimestamp(timestamp)
+    let monthlyDataId = createCompositeId(account.id, monthTimestamp.toString())
 
     let monthlyData = UserMonthlyData.load(monthlyDataId)
     if (!monthlyData) {
@@ -102,7 +89,7 @@ function updateMonthlyData(account: Account, principal: BigInt, interest: BigInt
 }
 
 function updateHolding(account: Account, token: Token, changeAmount: BigInt): void {
-    let holdingId = account.id + "-" + token.id
+    let holdingId = createCompositeId(account.id, token.id)
     let holding = Holding.load(holdingId)
 
     if (!holding) {
@@ -113,11 +100,16 @@ function updateHolding(account: Account, token: Token, changeAmount: BigInt): vo
     }
 
     holding.amount = holding.amount.plus(changeAmount)
-    holding.save()
+    // Only save if amount is non-negative
+    if (holding.amount.ge(BigInt.fromI32(0))) {
+        holding.save()
+    }
 }
 
 function createTransaction(event: TransferEvent, token: Token, tag: string, accountId: string): void {
-    let transaction = new Transaction(event.transaction.hash.toHexString())
+    // Use composite key to handle multiple transfers in same tx
+    let transactionId = event.transaction.hash.toHexString() + "-" + event.logIndex.toString()
+    let transaction = new Transaction(transactionId)
     transaction.account = accountId
     transaction.from = event.params.from
     transaction.to = event.params.to
@@ -126,16 +118,13 @@ function createTransaction(event: TransferEvent, token: Token, tag: string, acco
     transaction.amount = event.params.value
     transaction.tag = tag
 
-    // Calculate USD value
-    let price = token.lastPrice
-    let decimals = BigInt.fromI32(token.decimals)
-    let priceDecimals = BigInt.fromI32(8) // Chainlink typically uses 8 decimals
-
-    let value = event.params.value
-        .times(price)
-        .div(BigInt.fromI32(10).pow((decimals.plus(priceDecimals)).toI32() as u8))
-
-    transaction.value = value
+    // Calculate USD value with proper decimal handling
+    transaction.value = calculateUSDValue(
+        event.params.value,
+        token.decimals,
+        token.lastPrice,
+        8 // Chainlink typically uses 8 decimals
+    )
 
     transaction.save()
 }
