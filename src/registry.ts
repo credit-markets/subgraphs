@@ -23,11 +23,11 @@ import {
   Token as TokenTemplate,
   CMPool,
 } from "../generated/templates";
-import { CMPool as CMPoolContract } from "../generated/templates/CMPool/CMPool";
 import { store, BigInt, Bytes } from "@graphprotocol/graph-ts";
 import { ERC20 } from "../generated/templates/Token/ERC20";
 import { AggregatorV3Interface } from "../generated/templates/PriceFeed/AggregatorV3Interface";
-import { incrementTotalPools } from "./analytics";
+import { CMPool as CMPoolContract } from "../generated/templates/CMPool/CMPool";
+import { decrementTotalPools, updateTVL, incrementTotalPools } from "./analytics";
 
 // Handle FactoryAdded event
 export function handleFactoryAdded(event: FactoryAddedEvent): void {
@@ -56,97 +56,51 @@ export function handlePoolAdded(event: PoolAddedEvent): void {
   let poolAddresses = event.params.poolAddresses;
   for (let i = 0; i < poolAddresses.length; i++) {
     let poolAddress = poolAddresses[i];
-    let pool = Pool.load(poolAddress.toHexString());
-    if (!pool) {
-      pool = new Pool(poolAddress.toHexString());
-      // Bind the CMPool contract
-      let cmPoolContract = CMPoolContract.bind(poolAddress);
-
-      // Use try_* methods for all contract calls
-      let assetResult = cmPoolContract.try_asset();
-      let nameResult = cmPoolContract.try_name();
-      let symbolResult = cmPoolContract.try_symbol();
-      let startTimeResult = cmPoolContract.try_START_TIME();
-      let endTimeResult = cmPoolContract.try_END_TIME();
-      let thresholdResult = cmPoolContract.try_THRESHOLD();
-      let amountToRaiseResult = cmPoolContract.try_AMOUNT_TO_RAISE();
-      let feeBasisPointsResult = cmPoolContract.try_FEE_BASIS_POINTS();
-      let estimatedReturnBasisPointsResult =
-        cmPoolContract.try_ESTIMATED_RETURN_BASIS_POINTS();
-      let creditFacilitatorResult = cmPoolContract.try_CREDIT_FACILITATOR();
-      let kycLevelResult = cmPoolContract.try_KYC_LEVEL();
-      let termResult = cmPoolContract.try_TERM();
-
-      // Handle the asset token reference
-      if (!assetResult.reverted) {
-        let tokenAddress = assetResult.value;
-        let token = Token.load(tokenAddress.toHexString());
-        if (!token) {
-          // Instead of skipping the pool, create a minimal token record
-          token = new Token(tokenAddress.toHexString());
-          token.name = "Unknown Token";
-          token.symbol = "UNKNOWN";
-          token.decimals = 18;
-          token.priceFeedAddress = poolAddress; // Temporary value
-          token.lastPrice = BigInt.fromI32(0);
-          token.lastUpdate = BigInt.fromI32(0);
-          token.save();
-        }
-        pool.asset = token.id;
-      } else {
-        // If asset address reverted, set a default placeholder
-        let defaultTokenId = "0x0000000000000000000000000000000000000000";
-        let defaultToken = Token.load(defaultTokenId);
-        if (!defaultToken) {
-          defaultToken = new Token(defaultTokenId);
-          defaultToken.name = "Default Token";
-          defaultToken.symbol = "DEFAULT";
-          defaultToken.decimals = 18;
-          defaultToken.priceFeedAddress = poolAddress; // Temporary value
-          defaultToken.lastPrice = BigInt.fromI32(0);
-          defaultToken.lastUpdate = BigInt.fromI32(0);
-          defaultToken.save();
-        }
-        pool.asset = defaultToken.id;
-      }
-
-      pool.name = nameResult.reverted ? "" : nameResult.value;
-      pool.symbol = symbolResult.reverted ? "" : symbolResult.value;
-      pool.startTime = startTimeResult.reverted
-        ? BigInt.fromI32(0)
-        : startTimeResult.value;
-      pool.endTime = endTimeResult.reverted
-        ? BigInt.fromI32(0)
-        : endTimeResult.value;
-      pool.threshold = thresholdResult.reverted
-        ? BigInt.fromI32(0)
-        : thresholdResult.value;
-      pool.amountToRaise = amountToRaiseResult.reverted
-        ? BigInt.fromI32(0)
-        : amountToRaiseResult.value;
-      pool.feeBasisPoints = feeBasisPointsResult.reverted
-        ? BigInt.fromI32(0)
-        : feeBasisPointsResult.value;
-      pool.estimatedReturnBasisPoints =
-        estimatedReturnBasisPointsResult.reverted
-          ? BigInt.fromI32(0)
-          : estimatedReturnBasisPointsResult.value;
-      pool.creditFacilitator = creditFacilitatorResult.reverted
-        ? "0x0000000000000000000000000000000000000000"
-        : creditFacilitatorResult.value.toHexString();
-      pool.kycLevel = kycLevelResult.reverted
-        ? BigInt.fromI32(0)
-        : kycLevelResult.value;
+    let poolId = poolAddress.toHexString();
+    
+    // Check if pool already exists to avoid double counting
+    let existingPool = Pool.load(poolId);
+    if (!existingPool) {
+      // Create the pool entity by reading from the contract
+      let pool = new Pool(poolId);
+      let poolContract = CMPoolContract.bind(poolAddress);
+      
+      // Read pool data from contract
+      let assetResult = poolContract.try_asset();
+      let nameResult = poolContract.try_name();
+      let symbolResult = poolContract.try_symbol();
+      let startTimeResult = poolContract.try_START_TIME();
+      let endTimeResult = poolContract.try_END_TIME();
+      let thresholdResult = poolContract.try_THRESHOLD();
+      let amountToRaiseResult = poolContract.try_AMOUNT_TO_RAISE();
+      let feeBasisPointsResult = poolContract.try_FEE_BASIS_POINTS();
+      let estimatedReturnBasisPointsResult = poolContract.try_ESTIMATED_RETURN_BASIS_POINTS();
+      let creditFacilitatorResult = poolContract.try_CREDIT_FACILITATOR();
+      let kycLevelResult = poolContract.try_KYC_LEVEL();
+      let termResult = poolContract.try_TERM();
+      
+      // Set pool data with proper error handling
+      pool.asset = assetResult.reverted ? "0x0000000000000000000000000000000000000000" : assetResult.value.toHexString();
+      pool.name = nameResult.reverted ? "Unknown Pool" : nameResult.value;
+      pool.symbol = symbolResult.reverted ? "UNKNOWN" : symbolResult.value;
+      pool.startTime = startTimeResult.reverted ? BigInt.fromI32(0) : startTimeResult.value;
+      pool.endTime = endTimeResult.reverted ? BigInt.fromI32(0) : endTimeResult.value;
+      pool.threshold = thresholdResult.reverted ? BigInt.fromI32(0) : thresholdResult.value;
+      pool.amountToRaise = amountToRaiseResult.reverted ? BigInt.fromI32(0) : amountToRaiseResult.value;
+      pool.feeBasisPoints = feeBasisPointsResult.reverted ? BigInt.fromI32(0) : feeBasisPointsResult.value;
+      pool.estimatedReturnBasisPoints = estimatedReturnBasisPointsResult.reverted ? BigInt.fromI32(0) : estimatedReturnBasisPointsResult.value;
+      pool.creditFacilitator = creditFacilitatorResult.reverted ? "0x0000000000000000000000000000000000000000" : creditFacilitatorResult.value.toHexString();
+      pool.kycLevel = kycLevelResult.reverted ? BigInt.fromI32(0) : kycLevelResult.value;
       pool.term = termResult.reverted ? BigInt.fromI32(0) : termResult.value;
       pool.totalInvested = BigInt.fromI32(0);
       pool.fundsTaken = false;
       pool.repaid = false;
       pool.refunded = false;
-
+      
       pool.save();
       incrementTotalPools();
-
-      // Create a new CMPool data source
+      
+      // Create the CMPool template instance to listen for events
       CMPool.create(poolAddress);
     }
   }
@@ -157,8 +111,14 @@ export function handlePoolRemoved(event: PoolRemovedEvent): void {
   let poolAddresses = event.params.poolAddresses;
   for (let i = 0; i < poolAddresses.length; i++) {
     let poolId = poolAddresses[i].toHex();
-    if (Pool.load(poolId) != null) {
-      store.remove("Pool", poolId); // Remove the pool if it exists
+    let pool = Pool.load(poolId);
+    if (pool != null) {
+      // Update TVL before removing pool only if not already refunded
+      if (!pool.refunded && pool.totalInvested.gt(BigInt.fromI32(0))) {
+        updateTVL(pool.totalInvested.neg(), event.block.timestamp);
+      }
+      store.remove("Pool", poolId);
+      decrementTotalPools();
     }
   }
 }

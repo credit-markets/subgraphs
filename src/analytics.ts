@@ -1,5 +1,6 @@
 import { BigInt } from "@graphprotocol/graph-ts"
 import { Analytics, TVLDayData } from "../generated/schema"
+import { getDayStartTimestamp } from "./utils"
 
 export function getOrCreateAnalytics(): Analytics {
     let analytics = Analytics.load("1")
@@ -23,12 +24,12 @@ export function updateTVL(changeAmount: BigInt, blockTimestamp: BigInt): void {
 }
 
 function updateTVLDayData(currentTVL: BigInt, blockTimestamp: BigInt): void {
-    let dayID = blockTimestamp.div(BigInt.fromI32(86400)) // Get current day by dividing by seconds in a day
-    let dayStartTimestamp = dayID.times(BigInt.fromI32(86400))
-    let tvlDayData = TVLDayData.load(dayID.toString())
+    let dayStartTimestamp = getDayStartTimestamp(blockTimestamp)
+    let dayID = dayStartTimestamp.div(BigInt.fromI32(86400)).toString()
+    let tvlDayData = TVLDayData.load(dayID)
 
     if (!tvlDayData) {
-        tvlDayData = new TVLDayData(dayID.toString())
+        tvlDayData = new TVLDayData(dayID)
         tvlDayData.timestamp = dayStartTimestamp
     }
 
@@ -46,4 +47,20 @@ export function incrementTotalPools(): void {
     let analytics = getOrCreateAnalytics()
     analytics.totalPools += 1
     analytics.save()
+}
+
+export function decrementTotalPools(): void {
+    let analytics = getOrCreateAnalytics()
+    if (analytics.totalPools > 0) {
+        analytics.totalPools -= 1
+        analytics.save()
+    }
+}
+
+export function decrementTotalInvestors(): void {
+    let analytics = getOrCreateAnalytics()
+    if (analytics.totalInvestors > 0) {
+        analytics.totalInvestors -= 1
+        analytics.save()
+    }
 }
